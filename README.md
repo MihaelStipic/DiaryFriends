@@ -34,7 +34,7 @@ Live Demo: http://diaryfriends.runasp.net/
 ## How to run locally
 
 1. Clone the repo:
-   git clone https://github.com/YOUR_USERNAME/DiaryFriends.git
+   git clone https://github.com/MihaelStipic/DiaryFriends.git
 
 2. Add your local connection string to appsettings.Development.json.
 
