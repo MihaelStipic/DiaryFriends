@@ -1,0 +1,23 @@
+# Build outputs
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider 
+.idea/
+
+# Ostalo
+*.pdb
+*.cache
+publish/
+*.publishsettings
+
+# NuGet
+*.nupkg
+packages/

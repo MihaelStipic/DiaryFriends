@@ -1,0 +1,68 @@
+﻿@model List<DiaryEntry>
+@using Microsoft.AspNetCore.Identity
+@using DiaryFriends.Models
+@using DiaryFriends.Data
+@inject UserManager<ApplicationUser> UserManager
+@inject ApplicationDbContext Db
+
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    var currentUser = await UserManager.GetUserAsync(User);
+    var firstName = currentUser?.FirstName ?? User.Identity?.Name;
+
+    var f = Db.Friends.FirstOrDefault(x => x.UserId == currentUser!.Id || x.FriendId == currentUser.Id);
+    var friendId = f == null ? null : (f.UserId == currentUser!.Id ? f.FriendId : f.UserId);
+    var friend = friendId == null ? null : Db.Users.Find(friendId);
+
+    <div class="container" style="margin-top: 13rem;">
+        <div class="row g-3 justify-content-center">
+
+            <!-- Moje ime / Moj dnevnik -->
+            <div class="col-12 col-md-5">
+                <a class="btn btn-primary w-100 fs-3 d-flex align-items-center justify-content-center shadow-sm"
+                   style="height: 120px;"
+                   asp-controller="DiaryEntries"
+                   asp-action="Index">
+                    @firstName
+                </a>
+            </div>
+
+            <!-- Prijatelj ili Dodaj Prijatelja -->
+            <div class="col-12 col-md-5">
+                @if (friend != null)
+                {
+                    <a class="btn btn-secondary w-100 fs-3 d-flex align-items-center justify-content-center shadow-sm"
+                       style="height: 120px;"
+                       asp-controller="DiaryEntries"
+                       asp-action="Show"
+                       asp-route-friend="@friend.Id"
+                       asp-route-sortorder="asc">
+                        @(friend.FirstName ?? friend.Email)
+                    </a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-secondary w-100 fs-3 d-flex align-items-center justify-content-center shadow-sm"
+                       style="height: 120px;"
+                       asp-controller="Friends"
+                       asp-action="Index">
+                        +
+                    </a>
+                }
+            </div>
+
+        </div>
+    </div>
+}
+else
+{
+    <div class="container mt-5 text-center">
+        <div class="alert alert-warning d-inline-block px-4 py-2">
+            Please log in or register to see your Diary information.
+        </div>
+        <div class="mt-2">
+            <a href="/Identity/Account/Login" class="btn btn-primary me-2">Log in</a>
+            <a href="/Identity/Account/Register" class="btn btn-outline-light">Register</a>
+        </div>
+    </div>
+}
