@@ -4,7 +4,7 @@ DiaryFriends is an ASP.NET Core MVC web application for keeping a personal diary
 
 Live Demo: https://diaryfriends.runasp.net/
 
-> Note: The live version is hosted monsterasp.net for testing purposes. Please use fictional email addresses and passwords when trying out the demo.
+> Note: The live version is hosted on monsterasp.net for testing purposes. Please use fictional email addresses and passwords when trying out the demo.
 ---
 
 ## Tech Stack
