@@ -27,10 +27,23 @@ Live Demo: https://diaryfriends.runasp.net/
 * **Diary Management:**
   * Full functionality to add, view, edit, and delete your own entries.
   * Sorting buttons to organize entries by date (newest or oldest first).
+* **Reactions:**
+  * React to diary entries using emojis.
+* **Streak System:**
+  * Keep track of your daily writing habits. Maintain your streak by logging in and writing consistently!
 * **Security:**
   * Secure password and session handling via ASP.NET Core Identity.
 
 ---
+
+## Update Log
+
+**August 27, 2026**
+* Added the **Reactions** feature, allowing users to leave emoji reactions on diary entries.
+* Added **Streaks**.
+
+---
+
 ## How to run locally
 
 1. Clone the repo:
