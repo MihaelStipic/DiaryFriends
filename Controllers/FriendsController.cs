@@ -73,6 +73,11 @@ namespace DiaryFriends.Controllers
             var deadFriendships = _db.Friends.Where(f => !_db.Users.Any(u => u.Id == f.UserId) || !_db.Users.Any(u => u.Id == f.FriendId)).ToList();
             if (deadFriendships.Any())
             {
+                var deadReactions = _db.Reactions
+                .Where(r => !_db.Users.Any(u => u.Id == r.UserId))
+                .ToList();
+
+                _db.Reactions.RemoveRange(deadReactions);
                 _db.Friends.RemoveRange(deadFriendships);
                 _db.SaveChanges();
             }
@@ -108,8 +113,16 @@ namespace DiaryFriends.Controllers
             if (friendship != null)
             {
                 _db.Friends.Remove(friendship);
+                
                 _db.SaveChanges();
             }
+            List<Reaction> reactions = _db.Reactions.Where(x => x.UserId == currentUserId || x.UserId == friendId).ToList();
+            foreach (var react in reactions)
+            {
+                _db.Reactions.Remove(react);
+                
+            }
+            _db.SaveChanges();
 
             return RedirectToAction(nameof(Index));
         }

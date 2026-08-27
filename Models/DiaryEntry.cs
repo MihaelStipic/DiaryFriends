@@ -13,6 +13,10 @@ namespace DiaryFriends.Models
         [Required]
         public DateTime Created { get; set; } = DateTime.Now;
         public string UserId { get; set; }
+        public Reaction? reacted { get; set; }
+
+
+        
 
     }
 }

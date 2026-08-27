@@ -30,11 +30,11 @@ namespace DiaryFriends.Controllers
 
             if (sortorder == "dateasc")
             {
-                entries = _db.DiaryEntries.Where(x => x.UserId == userId).OrderBy(x => x.Created).ToList();
+                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == userId).OrderBy(x => x.Created).ToList();
             }
             else
             {
-                entries = _db.DiaryEntries.Where(x => x.UserId == userId).OrderByDescending(x => x.Created).ToList();
+                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == userId).OrderByDescending(x => x.Created).ToList();
             }
 
             return View(entries);
@@ -57,11 +57,29 @@ namespace DiaryFriends.Controllers
         {
             
             obj.UserId = GetCurrentUserId();
-
             
+
             if (!string.IsNullOrEmpty(obj.Title) && obj.Title.Length < 3)
             {
                 ModelState.AddModelError("Title", "Title too short");
+            }
+            //streak logic
+            var user = _db.Users.Find(obj.UserId);
+            if (user != null)
+            {
+                var today = DateTime.Now.Date;
+                var lastEntryDate = user.StreakDate.Date;
+
+                if (lastEntryDate == today.AddDays(-1))
+                {
+                    user.StreakCount += 1;
+                    user.StreakDate = DateTime.Now;
+                }
+                else if (lastEntryDate < today.AddDays(-1))
+                {
+                    user.StreakCount = 1;
+                    user.StreakDate = DateTime.Now;
+                }
             }
 
             if (ModelState.IsValid)
@@ -217,17 +235,18 @@ namespace DiaryFriends.Controllers
            
             var friendUser = _db.Users.FirstOrDefault(u => u.Id == friendId);
             ViewBag.User = friendUser?.FirstName ?? friendUser?.Email;
+            ViewBag.StreakCount = friendUser?.StreakCount ?? 0;
+            ViewBag.StreakDate = friendUser?.StreakDate;
 
-          
             List<DiaryEntry> entries;
 
             if (sortorder == "dateasc")
             {
-                entries = _db.DiaryEntries.Where(x => x.UserId == friendId).OrderBy(x => x.Created).ToList();
+                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == friendId).OrderBy(x => x.Created).ToList();
             }
             else
             {
-                entries = _db.DiaryEntries.Where(x => x.UserId == friendId).OrderByDescending(x => x.Created).ToList();
+                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == friendId).OrderByDescending(x => x.Created).ToList();
             }
 
             return View(entries);
@@ -271,6 +290,58 @@ namespace DiaryFriends.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public IActionResult AddReaction(int entryId, string reactionType)
+        {
+            var currentUserId = GetCurrentUserId();
+
+            var diaryEntry = _db.DiaryEntries.Find(entryId);
+            if (diaryEntry == null)
+            {
+                return NotFound();
+            }
+
+            var friendship = _db.Friends.FirstOrDefault(f => f.UserId == currentUserId || f.FriendId == currentUserId);
+            bool isFriend = friendship != null &&
+                diaryEntry.UserId == (friendship.UserId == currentUserId ? friendship.FriendId : friendship.UserId);
+
+            if (!isFriend)
+            {
+                return NotFound();
+            }
+
+            var existingReaction = _db.Reactions.FirstOrDefault(x => x.DiaryEntryId == entryId);
+
+            if (existingReaction != null)
+            {
+                if (existingReaction.ReactionType == reactionType)
+                {
+                    _db.Reactions.Remove(existingReaction);
+                    _db.SaveChanges();
+                    return RedirectToAction("Show");
+                }
+                else
+                {
+                    existingReaction.ReactionType = reactionType;
+                    _db.SaveChanges();
+                }
+            }
+            else
+            {
+                var react = new Reaction
+                {
+                    DiaryEntryId = entryId,
+                    UserId = currentUserId,
+                    ReactionType = reactionType
+                };
+
+                _db.Reactions.Add(react);
+                _db.SaveChanges();
+            }
+
+            return RedirectToAction("Show");
         }
 
 

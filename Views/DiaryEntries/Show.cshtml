@@ -3,6 +3,25 @@
 @using DiaryFriends.Models
 @inject UserManager<ApplicationUser> UserManager
 
+@{
+    //LOGIKA ZA PRIKAZ STREAKA PRIJATELJA
+    int displayStreak = ViewBag.StreakCount != null ? (int)ViewBag.StreakCount : 0;
+    DateTime? lastEntry = ViewBag.StreakDate as DateTime?;
+
+    if (lastEntry.HasValue)
+    {
+        var today = DateTime.Now.Date;
+        if (lastEntry.Value.Date < today.AddDays(-1))
+        {
+            displayStreak = 0;
+        }
+    }
+    else
+    {
+        displayStreak = 0;
+    }
+}
+
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     <div class="container-fluid px-2 px-md-3 mt-3">
@@ -13,22 +32,26 @@
                 <h2 class="text-white m-0 text-center text-md-start">
                     Diary Entries by @ViewBag.User
                 </h2>
+
+                <!-- OVDJE PRIKAZUJEMO STREAK PRIJATELJA -->
+                
             </div>
+
             <div class="col-12 col-md-5 d-flex justify-content-center justify-content-md-end gap-2 order-1 order-md-2">
-                <a class="btn btn-outline-light rounded-0" 
-                   asp-controller="DiaryEntries" 
-                   asp-action="Show" 
-                   asp-route-sortorder="dateasc" 
+                <a class="btn btn-outline-light rounded-0"
+                   asp-controller="DiaryEntries"
+                   asp-action="Show"
+                   asp-route-sortorder="dateasc"
                    title="Sort Starije">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-numeric-down-alt" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M11.36 7.098c-1.137 0-1.708-.657-1.762-1.278h1.004c.058.223.343.45.773.45.824 0 1.164-.829 1.133-1.856h-.059c-.148.39-.57.742-1.261.742-.91 0-1.72-.613-1.72-1.758 0-1.148.848-1.836 1.973-1.836 1.09 0 2.063.637 2.063 2.688 0 1.867-.723 2.848-2.145 2.848zm.062-2.735c.504 0 .933-.336.933-.972 0-.633-.398-1.008-.94-1.008-.52 0-.927.375-.927 1 0 .64.418.98.934.98" />
                         <path d="M12.438 8.668V14H11.39V9.684h-.051l-1.211.859v-.969l1.262-.906h1.046zM4.5 2.5a.5.5 0 0 0-1 0v9.793l-1.146-1.147a.5.5 0 0 0-.708.708l2 1.999.007.007a.497.497 0 0 0 .7-.006l2-2a.5.5 0 0 0-.707-.708L4.5 12.293z" />
                     </svg>
                 </a>
-                <a class="btn btn-outline-light rounded-0" 
-                   asp-controller="DiaryEntries" 
-                   asp-action="Show" 
-                   asp-route-sortorder="datedesc" 
+                <a class="btn btn-outline-light rounded-0"
+                   asp-controller="DiaryEntries"
+                   asp-action="Show"
+                   asp-route-sortorder="datedesc"
                    title="Sort Novije">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sort-numeric-up" viewBox="0 0 16 16">
                         <path d="M12.438 1.668V7H11.39V2.684h-.051l-1.211.859v-.969l1.262-.906h1.046z" />
@@ -39,7 +62,6 @@
             </div>
         </div>
 
-       
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
             @foreach (var entry in Model)
             {
@@ -47,27 +69,116 @@
                     <div class="card bg-dark text-white border-secondary h-100 shadow-sm rounded-0">
                         <div class="card-body d-flex flex-column p-3">
 
-                        
                             <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title text-primary mb-0 fs-6 fw-bold">
+                                <h5 class="card-title text-primary mb-0 fs-6 fw-bold pe-2 text-truncate" style="min-width: 0; flex: 1;">
                                     @(entry.Title != null && entry.Title.Length > 40 ? entry.Title.Substring(0, 40) + "..." : entry.Title)
                                 </h5>
-                                <span class="badge bg-secondary font-monospace ms-2 rounded-0">@entry.Created.ToString("dd.MM.yyyy.")</span>
+                                <span class="badge bg-secondary font-monospace rounded-0">@entry.Created.ToString("dd.MM.yyyy.")</span>
                             </div>
 
-                      
                             <p class="card-text text-light small mb-3 flex-grow-1">
                                 @(entry.Content != null && entry.Content.Length > 120 ? entry.Content.Substring(0, 120) + "..." : entry.Content)
                             </p>
 
-                         
-                            <div class="d-flex justify-content-end pt-2 border-top border-secondary mt-auto">
+                            <div class="d-flex justify-content-between align-items-center mt-3 border-top border-secondary pt-2">
+
+                                <div class="dropdown">
+
+                                    @switch (entry.reacted?.ReactionType)
+                                    {
+                                        case "haha":
+                                            <button class="btn btn-warning btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">😂</button>
+                                            break;
+                                        case "like":
+                                            <button class="btn btn-primary btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">👍</button>
+                                            break;
+                                        case "sad":
+                                            <button class="btn btn-info btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">😢</button>
+                                            break;
+                                        case "aww":
+                                            <button class="btn btn-info btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">😊</button>
+                                            break;
+                                        case "angel":
+                                            <button class="btn btn-info btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">😇</button>
+                                            break;
+                                        case "ouch":
+                                            <button class="btn btn-info btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">😖</button>
+                                            break;
+                                        case "angry":
+                                            <button class="btn btn-info btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">😡</button>
+                                            break;
+                                        case "heart":
+                                            <button class="btn btn-info btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">❤️</button>
+                                            break;
+                                        default:
+                                            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 dropdown-toggle" type="button" id="reactionMenu-@entry.Id" data-bs-toggle="dropdown" aria-expanded="false">
+                                                ➕
+                                            </button>
+                                            break;
+                                    }
+
+                                    <!-- Mali prozorčić sa emojijima -->
+                                    <div class="dropdown-menu dropdown-menu-dark p-2 border-secondary shadow-sm" aria-labelledby="reactionMenu-@entry.Id" style="min-width: auto;">
+                                        <div class="d-flex gap-2">
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="like" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "like" ? "btn-primary" : "btn-outline-danger") btn-sm rounded-pill px-3">👍</button>
+                                            </form>
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="haha" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "haha" ? "btn-warning" : "btn-outline-danger") btn-sm rounded-pill px-3">😂</button>
+                                            </form>
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="sad" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "sad" ? "btn-info" : "btn-outline-danger") btn-sm rounded-pill px-3">😢</button>
+                                            </form>
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="aww" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "aww" ? "btn-info" : "btn-outline-danger") btn-sm rounded-pill px-3">😊</button>
+                                            </form>
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="angel" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "angel" ? "btn-info" : "btn-outline-danger") btn-sm rounded-pill px-3">😇</button>
+                                            </form>
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="ouch" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "ouch" ? "btn-info" : "btn-outline-danger") btn-sm rounded-pill px-3">😖</button>
+                                            </form>
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="angry" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "angry" ? "btn-info" : "btn-outline-danger") btn-sm rounded-pill px-3">😡</button>
+                                            </form>
+
+                                            <form asp-controller="DiaryEntries" asp-action="AddReaction" method="post" class="m-0">
+                                                <input type="hidden" name="entryId" value="@entry.Id" />
+                                                <input type="hidden" name="reactionType" value="heart" />
+                                                <button type="submit" class="btn @(entry.reacted?.ReactionType == "heart" ? "btn-info" : "btn-outline-danger") btn-sm rounded-pill px-3">❤️</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <a asp-controller="DiaryEntries" asp-action="ShowView" asp-route-id="@entry.Id" class="btn btn-outline-light btn-sm px-3 rounded-0 d-inline-flex align-items-center gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
                                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
                                     </svg>
                                     View
                                 </a>
+
                             </div>
 
                         </div>
@@ -76,10 +187,12 @@
             }
         </div>
 
-     
         <div class="mt-4 mb-3">
             <a asp-controller="Home" asp-action="MyPage" class="btn btn-outline-light rounded-0">← Back</a>
         </div>
+    </div>
+    <div class="mt-2 d-flex justify-content-end text-white">
+        <span class="badge bg-danger rounded-0 fs-6">🔥 Streak: <strong>@displayStreak</strong> days!</span>
     </div>
 }
 else

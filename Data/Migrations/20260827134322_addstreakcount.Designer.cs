@@ -4,6 +4,7 @@ using DiaryFriends.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DiaryFriends.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260827134322_addstreakcount")]
+    partial class addstreakcount
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,12 +74,6 @@ namespace DiaryFriends.Data.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StreakCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("StreakDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -112,6 +109,12 @@ namespace DiaryFriends.Data.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("StreakCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StreakDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -130,6 +133,8 @@ namespace DiaryFriends.Data.Migrations
                             Id = 1,
                             Content = "Hiking with me",
                             Created = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            StreakCount = 0,
+                            StreakDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Title = "Went Hiking",
                             UserId = "5d0370d0-678e-4144-b645-3303335f8d75"
                         },
@@ -138,6 +143,8 @@ namespace DiaryFriends.Data.Migrations
                             Id = 2,
                             Content = "Fishin with me",
                             Created = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            StreakCount = 0,
+                            StreakDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Title = "Went Fishin",
                             UserId = "5d0370d0-678e-4144-b645-3303335f8d75"
                         },
@@ -146,6 +153,8 @@ namespace DiaryFriends.Data.Migrations
                             Id = 3,
                             Content = "Shop with me",
                             Created = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            StreakCount = 0,
+                            StreakDate = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Title = "Went Shopping",
                             UserId = "5d0370d0-678e-4144-b645-3303335f8d75"
                         });
