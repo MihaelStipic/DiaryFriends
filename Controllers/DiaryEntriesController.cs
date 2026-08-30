@@ -23,21 +23,43 @@ namespace DiaryFriends.Controllers
             return User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         }
 
-        public IActionResult Index(string sortorder)
+        public async Task<IActionResult> Index(string sortorder)
         {
             var userId = GetCurrentUserId();
+
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
             List<DiaryEntry> entries;
 
             if (sortorder == "dateasc")
             {
-                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == userId).OrderBy(x => x.Created).ToList();
+                entries = await _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == userId).OrderBy(x => x.Created).ToListAsync();
             }
             else
             {
-                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == userId).OrderByDescending(x => x.Created).ToList();
+                entries = await _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == userId).OrderByDescending(x => x.Created).ToListAsync();
             }
 
-            return View(entries);
+            int displayStreak = user != null ? user.StreakCount : 0;
+
+            if (user != null)
+            {
+                var today = DateTime.Now.Date;
+                var lastEntry = user.StreakDate.Date;
+                if (lastEntry < today.AddDays(-1))
+                {
+                    displayStreak = 0;
+                }
+            }
+
+            var vm = new DiaryIndexViewModel
+            {
+                Entries = entries,
+                FirstName = user?.FirstName ?? User.Identity?.Name,
+                StreakCount = displayStreak
+            };
+
+            return View(vm);
         }
 
         public IActionResult Create()
@@ -215,41 +237,41 @@ namespace DiaryFriends.Controllers
         }
 
         [HttpGet]
-        public IActionResult Show(string sortorder)
+        public async Task<IActionResult> Show(string sortorder)
         {
             var currentUserId = GetCurrentUserId();
 
-     
-            var friendship = _db.Friends.FirstOrDefault(f => f.UserId == currentUserId || f.FriendId == currentUserId);
+            var friendship = await _db.Friends.FirstOrDefaultAsync(f => f.UserId == currentUserId || f.FriendId == currentUserId);
 
-           
             if (friendship == null)
             {
-                ViewBag.User = null;
-                return View(new List<DiaryEntry>());
+                return View(new DiaryShowViewModel { Entries = new List<DiaryEntry>() });
             }
 
-        
             var friendId = friendship.UserId == currentUserId ? friendship.FriendId : friendship.UserId;
 
-           
-            var friendUser = _db.Users.FirstOrDefault(u => u.Id == friendId);
-            ViewBag.User = friendUser?.FirstName ?? friendUser?.Email;
-            ViewBag.StreakCount = friendUser?.StreakCount ?? 0;
-            ViewBag.StreakDate = friendUser?.StreakDate;
+            var friendUser = await _db.Users.FirstOrDefaultAsync(u => u.Id == friendId);
 
             List<DiaryEntry> entries;
 
             if (sortorder == "dateasc")
             {
-                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == friendId).OrderBy(x => x.Created).ToList();
+                entries = await _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == friendId).OrderBy(x => x.Created).ToListAsync();
             }
             else
             {
-                entries = _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == friendId).OrderByDescending(x => x.Created).ToList();
+                entries = await _db.DiaryEntries.Include(x => x.reacted).Where(x => x.UserId == friendId).OrderByDescending(x => x.Created).ToListAsync();
             }
 
-            return View(entries);
+            var vm = new DiaryShowViewModel
+            {
+                Entries = entries,
+                FriendName = friendUser?.FirstName ?? friendUser?.Email,
+                StreakCount = friendUser?.StreakCount ?? 0,
+                StreakDate = friendUser?.StreakDate
+            };
+
+            return View(vm);
         }
 
         [HttpGet]

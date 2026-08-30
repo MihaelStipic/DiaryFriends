@@ -1,23 +1,5 @@
-﻿@model List<DiaryEntry>
-@using Microsoft.AspNetCore.Identity
+﻿@model DiaryFriends.Models.DiaryIndexViewModel
 @using DiaryFriends.Models
-@inject UserManager<ApplicationUser> UserManager
-
-@{
-    var currentUser = await UserManager.GetUserAsync(User);
-    var firstName = currentUser?.FirstName ?? User.Identity?.Name;
-    int displayStreak = currentUser != null ? currentUser.StreakCount : 0;
-
-    if (currentUser != null)
-    {
-        var today = DateTime.Now.Date;
-        var lastEntry = currentUser.StreakDate.Date;
-        if (lastEntry < today.AddDays(-1))
-        {
-            displayStreak = 0;
-        }
-    }
-}
 
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
@@ -27,7 +9,7 @@
         <div class="row align-items-center gy-3 mb-4">
             <div class="col-12 col-md-7">
                 <h2 class="text-white m-0 text-center text-md-start">
-                    Diary Entries by @firstName
+                    Diary Entries by @Model.FirstName
                 </h2>
             </div>
             <div class="col-12 col-md-5 d-flex justify-content-center justify-content-md-end gap-2">
@@ -52,7 +34,7 @@
 
      
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-            @foreach (var entry in Model)
+            @foreach (var entry in Model.Entries)
             {
                 <div class="col">
                     <div class="card bg-dark text-white border-secondary h-100 shadow-sm rounded-0">
@@ -133,7 +115,7 @@
         </div>
 
         <div class="mt-2 d-flex justify-content-end text-white">
-            <span class="badge bg-danger rounded-0 fs-6">🔥 Streak: <strong>@displayStreak</strong> days!</span>
+            <span class="badge bg-danger rounded-0 fs-6">🔥 Streak: <strong>@Model.StreakCount</strong> days!</span>
         </div>
     </div>
 

@@ -14,6 +14,8 @@ namespace DiaryFriends.Data
         public DbSet<Friend> Friends { get; set; }
         public DbSet<Reaction> Reactions { get; set; }
 
+        public DbSet<TicTacToe> TicTacToes { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
