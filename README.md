@@ -25,10 +25,18 @@ Live Demo: https://diaryfriends.runasp.net/
   * Keep track of your daily writing habits. Maintain your streak by logging in and writing consistently!
 * **Tic-Tac-Toe:**
   * Play a simple game of Tic-Tac-Toe with your friend directly from your page.
+* **Profile Customization:**
+  * Upload a profile picture (JPG, PNG, or WEBP, max 2MB).
+  * Update your first name.
 * **Security:**
   * Secure password and session handling via ASP.NET Core Identity.
 ---
 ## Update Log
+**September 3, 2026**
+* Added profile picture upload with validation (file type, size, and content checks).
+* Added ability to update first name from the profile page.
+* Visual redesign of the main page (profile cards, game board).
+  
 **August 30, 2026**
 * Added **Tic-Tac-Toe**, a mini-game you can play with your friend.
 
