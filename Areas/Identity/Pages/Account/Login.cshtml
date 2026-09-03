@@ -32,14 +32,19 @@
                 <div>
                     <button id="login-submit" type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
                 </div>
-                <div>
-                    
-                </div>
+                
             </form>
+
         </section>
     </div>
     <div class="col-md-6 col-md-offset-2">
-        
+    <section class="mt-4 mt-md-0">
+        <h4 class="mb-3">Don't have an account?</h4>
+        <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-light">
+            Register
+        </a>
+       
+    </section>
     </div>
 </div>
 

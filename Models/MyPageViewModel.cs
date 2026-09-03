@@ -10,5 +10,6 @@ namespace DiaryFriends.Models
         public TicTacToe? Game { get; set; }
         public string[] Board { get; set; } = new string[9];
         public List<DiaryEntry> Entries { get; set; } = new List<DiaryEntry>();
+        public string? ProfilePicturePath { get; set; }
     }
 }

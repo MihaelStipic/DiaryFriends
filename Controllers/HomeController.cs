@@ -53,7 +53,8 @@ namespace DiaryFriends.Controllers
                 FirstName = firstName,
                 Friend = friend,
                 Game = game,
-                Board = board
+                Board = board,
+                ProfilePicturePath = currentUser?.ProfilePicturePath
             };
 
             return View(viewModel);

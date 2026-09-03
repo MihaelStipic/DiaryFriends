@@ -122,6 +122,14 @@ namespace DiaryFriends.Controllers
                 _db.Reactions.Remove(react);
                 
             }
+
+            var games = _db.TicTacToes.Where(g =>
+            (g.Player1Id == currentUserId && g.Player2Id == friendId) ||
+            (g.Player1Id == friendId && g.Player2Id == currentUserId)).ToList();
+            foreach (var game in games)
+            {
+                _db.TicTacToes.Remove(game);
+            }
             _db.SaveChanges();
 
             return RedirectToAction(nameof(Index));

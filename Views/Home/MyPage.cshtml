@@ -1,16 +1,23 @@
 ﻿@model DiaryFriends.Models.MyPageViewModel
 @using DiaryFriends.Models
 
-<div class="container" style="margin-top: 13rem;">
-    <div class="row g-3 justify-content-center">
+<div class="container" style="margin-top: 8rem;">
+    <div class="row g-4 justify-content-center">
 
         <!-- My name-->
         <div class="col-12 col-md-5">
-            <a class="btn btn-primary w-100 fs-3 d-flex align-items-center justify-content-center shadow-sm"
-               style="height: 120px;"
+            <a class="profile-card"
                asp-controller="DiaryEntries"
                asp-action="Index">
-                @Model.FirstName
+                @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                {
+                    <img src="@Model.ProfilePicturePath" class="profile-avatar" />
+                }
+                else
+                {
+                    <div class="profile-avatar profile-avatar-placeholder">@Model.FirstName?.Substring(0, 1).ToUpper()</div>
+                }
+                <span class="profile-name">@Model.FirstName</span>
             </a>
         </div>
 
@@ -18,22 +25,29 @@
         <div class="col-12 col-md-5">
             @if (Model.Friend != null)
             {
-                <a class="btn btn-secondary w-100 fs-3 d-flex align-items-center justify-content-center shadow-sm"
-                   style="height: 120px;"
+                <a class="profile-card profile-card-friend"
                    asp-controller="DiaryEntries"
                    asp-action="Show"
                    asp-route-friend="@Model.Friend.Id"
                    asp-route-sortorder="asc">
-                    @(Model.Friend.FirstName ?? Model.Friend.Email)
+                    @if (!string.IsNullOrEmpty(Model.Friend.ProfilePicturePath))
+                    {
+                        <img src="@Model.Friend.ProfilePicturePath" class="profile-avatar" />
+                    }
+                    else
+                    {
+                        <div class="profile-avatar profile-avatar-placeholder">@((Model.Friend.FirstName ?? Model.Friend.Email)?.Substring(0, 1).ToUpper())</div>
+                    }
+                    <span class="profile-name">@(Model.Friend.FirstName ?? Model.Friend.Email)</span>
                 </a>
             }
             else
             {
-                <a class="btn btn-outline-secondary w-100 fs-3 d-flex align-items-center justify-content-center shadow-sm"
-                   style="height: 120px;"
+                <a class="profile-card profile-card-add"
                    asp-controller="Friends"
                    asp-action="Index">
-                    +
+                    <span class="add-icon">+</span>
+                    <span class="profile-name">Add a friend</span>
                 </a>
             }
         </div>
@@ -42,141 +56,287 @@
 </div>
 
 <style>
+    .profile-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+        height: 120px;
+        padding: 0 1.75rem;
+        border-radius: 18px;
+        text-decoration: none;
+        background: linear-gradient(135deg, #ff7a6e, #f2564a);
+        box-shadow: 0 8px 20px rgba(242, 86, 74, 0.25);
+        transition: transform 0.15s ease, box-shadow 0.15s ease;
+        color: #fff;
+    }
+
+        .profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(242, 86, 74, 0.35);
+            color: #fff;
+        }
+
+    .profile-card-friend {
+        background: linear-gradient(135deg, #4a4a4a, #2c2c2c);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+        .profile-card-friend:hover {
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+            color: #fff;
+        }
+
+    .profile-card-add {
+        background: transparent;
+        border: 2px dashed #666;
+        box-shadow: none;
+        justify-content: center;
+        color: #aaa;
+    }
+
+        .profile-card-add:hover {
+            border-color: #999;
+            color: #ddd;
+            transform: none;
+            box-shadow: none;
+        }
+
+    .profile-avatar {
+        width: 68px;
+        height: 68px;
+        min-width: 68px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .profile-avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.15);
+        font-size: 1.6rem;
+        font-weight: 700;
+    }
+
+    .profile-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .add-icon {
+        font-size: 2rem;
+        font-weight: 300;
+    }
+
+    .tic-tac-toe-card {
+        max-width: 420px;
+        border-radius: 20px;
+        background: linear-gradient(180deg, #1e1e1e, #161616);
+        border: 1px solid #2c2c2c;
+        overflow: hidden;
+    }
+
+    .tic-tac-toe-header {
+        padding: 1.5rem 1.25rem 0.5rem;
+        background: transparent;
+        border-bottom: none;
+    }
+
+        .tic-tac-toe-header h3 {
+            letter-spacing: 0.5px;
+            font-size: 1.95rem;
+            text-transform: uppercase;
+            color: #888;
+            font-weight: 700;
+        }
+
     .tic-tac-toe-board {
         display: grid;
         grid-template-columns: repeat(3, 100px);
         grid-template-rows: repeat(3, 100px);
         justify-content: center;
-        gap: 0;
-        margin: 20px auto;
+        gap: 8px;
+        margin: 1.5rem auto 0.5rem;
     }
 
     .grid-button {
-        background-color: transparent;
-        border: 4px solid #aaa;
-        font-size: 3.5rem;
-        font-weight: bold;
-        color: #eee;
+        background-color: rgba(255, 255, 255, 0.03);
+        border: none;
+        border-radius: 12px;
+        font-size: 3rem;
+        font-weight: 700;
         cursor: pointer;
         outline: none;
         width: 100px;
         height: 100px;
+        transition: background-color 0.15s ease, transform 0.1s ease;
     }
 
-        .grid-button:nth-child(1), .grid-button:nth-child(2), .grid-button:nth-child(3) {
-            border-top: none;
+        .grid-button:not(:disabled):hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            transform: scale(1.03);
         }
 
-        .grid-button:nth-child(1), .grid-button:nth-child(4), .grid-button:nth-child(7) {
-            border-left: none;
+        .grid-button:disabled {
+            cursor: default;
         }
 
-        .grid-button:nth-child(3), .grid-button:nth-child(6), .grid-button:nth-child(9) {
-            border-right: none;
-        }
+    .symbol-x {
+        color: #4ade80;
+    }
 
-        .grid-button:nth-child(7), .grid-button:nth-child(8), .grid-button:nth-child(9) {
-            border-bottom: none;
+    .symbol-o {
+        color: #60a5fa;
+    }
+
+    .turn-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.25rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 1.05rem;
+    }
+
+    .turn-badge-mine {
+        background-color: rgba(74, 222, 128, 0.12);
+        color: #4ade80;
+    }
+
+    .turn-badge-theirs {
+        background-color: rgba(248, 113, 113, 0.12);
+        color: #f87171;
+    }
+
+    .result-banner {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .play-again-btn {
+        border-radius: 999px;
+        padding: 0.6rem 2.5rem;
+        font-weight: 600;
+        border: none;
+        background: linear-gradient(135deg, #ff7a6e, #f2564a);
+        box-shadow: 0 6px 16px rgba(242, 86, 74, 0.3);
+    }
+
+        .play-again-btn:hover {
+            box-shadow: 0 8px 20px rgba(242, 86, 74, 0.4);
         }
 </style>
 
-<!-- Check if its your turn, if it is -> refresh page -->
-@if (Model.Game != null && (Model.Game.IsGameOver || Model.Game.CurrentTurnPlayerId != Model.CurrentUserId))
+@if (Model.Friend != null)
 {
-    <script>
-                let checkInterval = setInterval(function () {
-            fetch(`/Home/CheckTurn?gameId=@Model.Game.Id&isGameOver=@Model.Game.IsGameOver.ToString().ToLower()`)
-                .then(response => response.json())
-                .then(isMyTurn => {
-                    if (isMyTurn === true) {
-                        clearInterval(checkInterval);
-                        window.location.reload();
-                    }
-                });
-        }, 3000);
-    </script>
-}
-<!--id="igra" so when the page refreshes it will not go on the top of the website-->
-<div id="igra" class="card shadow-lg mx-auto mt-5 mb-5 text-light" style="max-width: 500px; border-radius: 15px; background-color: #1e1e1e; border: 1px solid #333;">
-    <div class="card-header text-center py-3" style="border-radius: 15px 15px 0 0; background-color: #111; border-bottom: 1px solid #333;">
-        <h3 class="mb-0 fw-bold">Tic-Tac-Toe</h3>
-    </div>
+    <!-- Check if its your turn, if it is -> refresh page -->
+    @if (Model.Game != null && (Model.Game.IsGameOver || Model.Game.CurrentTurnPlayerId != Model.CurrentUserId))
+    {
+        <script>
+                    let checkInterval = setInterval(function () {
+                fetch(`/Home/CheckTurn?gameId=@Model.Game.Id&isGameOver=@Model.Game.IsGameOver.ToString().ToLower()`)
+                    .then(response => response.json())
+                    .then(isMyTurn => {
+                        if (isMyTurn === true) {
+                            clearInterval(checkInterval);
+                            window.location.reload();
+                        }
+                    });
+            }, 3000);
+        </script>
+    }
+    <!--id="igra" so when the page refreshes it will not go on the top of the website-->
+    <div id="igra" class="tic-tac-toe-card shadow-lg mx-auto mt-5 mb-5 text-light">
+        <div class="tic-tac-toe-header text-center">
+            <h3 class="mb-0 fw-bold">Tic-Tac-Toe</h3>
+        </div>
 
-    <div class="card-body p-4" style="border-radius: 0 0 15px 15px; background-color: #1e1e1e;">
+        <div class="card-body p-4 text-center">
 
-        <form method="post" asp-action="PlayMove" asp-controller="Home" asp-fragment="igra" class="tic-tac-toe-board">
-            @for (int i = 0; i < 9; i++)
-            {
-                string symbol = Model.Board[i] == "-" ? "" : Model.Board[i];
-                bool isDisabled = Model.Board[i] != "-";
-
-                <button type="submit" name="cellIndex" value="@i" class="grid-button" @(isDisabled ? "disabled" : "")>
-                    @symbol
-                </button>
-            }
-        </form>
-
-        @if (Model.Game != null)
-        {
-            @if (!Model.Game.IsGameOver)
-            {
-                @if (Model.Game.CurrentTurnPlayerId == Model.CurrentUserId)
+            <form method="post" asp-action="PlayMove" asp-controller="Home" asp-fragment="igra" class="tic-tac-toe-board">
+                @for (int i = 0; i < 9; i++)
                 {
-                    <div class="text-center mt-4">
-                        <h4 class="text-success fw-bold">
-                            Your turn!
-                            @if (Model.Game.Player1Id == Model.CurrentUserId)
-                            {
-                                <span class="text-success">(X)</span>
-                            }
-                            else
-                            {
-                                <span class="text-info">(O)</span>
-                            }
-                        </h4>
-                    </div>
+                    string symbol = Model.Board[i] == "-" ? "" : Model.Board[i];
+                    bool isDisabled = Model.Board[i] != "-";
+                    string symbolClass = symbol == "X" ? "symbol-x" : symbol == "O" ? "symbol-o" : "";
+
+                    <button type="submit" name="cellIndex" value="@i" class="grid-button @symbolClass" @(isDisabled ? "disabled" : "")>
+                        @symbol
+                    </button>
                 }
-                else
-                {
-                    <div class="text-center mt-4">
-                        <h4 class="text-danger fw-bold">
-                            Their turn!
-                            @if (Model.Game.Player1Id == Model.CurrentUserId)
-                            {
-                                <span class="text-info">(O)</span>
-                            }
-                            else
-                            {
-                                <span class="text-success">(X)</span>
-                            }
-                        </h4>
-                    </div>
-                }
-            }
-            else
+            </form>
+
+            @if (Model.Game != null)
             {
-                <div class="text-center mt-4">
-                    @if (Model.Game.WinnerId == "Draw")
+                @if (!Model.Game.IsGameOver)
+                {
+                    @if (Model.Game.CurrentTurnPlayerId == Model.CurrentUserId)
                     {
-                        <h3 class="text-warning fw-bold">Draw!</h3>
-                    }
-                    else if (Model.Game.WinnerId == Model.CurrentUserId)
-                    {
-                        <h3 class="text-success fw-bold">You won!</h3>
+                        <div class="mt-4">
+                            <span class="turn-badge turn-badge-mine">
+                                Your turn!
+                                @if (Model.Game.Player1Id == Model.CurrentUserId)
+                                {
+                                    <span>(X)</span>
+                                }
+                                else
+                                {
+                                    <span>(O)</span>
+                                }
+                            </span>
+                        </div>
                     }
                     else
                     {
-                        <h3 class="text-danger fw-bold">You lost!</h3>
+                        <div class="mt-4">
+                            <span class="turn-badge turn-badge-theirs">
+                                Their turn!
+                                @if (Model.Game.Player1Id == Model.CurrentUserId)
+                                {
+                                    <span>(O)</span>
+                                }
+                                else
+                                {
+                                    <span>(X)</span>
+                                }
+                            </span>
+                        </div>
                     }
+                }
+                else
+                {
+                    <div class="mt-4">
+                        @if (Model.Game.WinnerId == "Draw")
+                        {
+                            <div class="result-banner text-warning">Draw!</div>
+                        }
+                        else if (Model.Game.WinnerId == Model.CurrentUserId)
+                        {
+                            <div class="result-banner text-success">You won!</div>
+                        }
+                        else
+                        {
+                            <div class="result-banner text-danger">You lost!</div>
+                        }
 
-                    @if (Model.Game.CurrentTurnPlayerId == Model.CurrentUserId)
-                    {
-                        <a asp-action="Restart" asp-controller="Home" class="btn btn-primary btn-lg mt-3 px-5 shadow-sm">
-                            Play again
-                        </a>
-                    }
-                </div>
+                        @if (Model.Game.CurrentTurnPlayerId == Model.CurrentUserId)
+                        {
+                            <form asp-action="Restart" asp-controller="Home" method="post">
+                                <button type="submit" class="btn play-again-btn text-white mt-2">
+                                    Play again
+                                </button>
+                            </form>
+                        }
+                    </div>
+                }
             }
-        }
+        </div>
     </div>
-</div>
+}

@@ -18,13 +18,17 @@ public class IndexModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IWebHostEnvironment _webHostEnvironment;
+
 
     public IndexModel(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        SignInManager<ApplicationUser> signInManager,
+        IWebHostEnvironment webHostEnvironment)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _webHostEnvironment = webHostEnvironment;
     }
 
     /// <summary>
@@ -60,6 +64,15 @@ public class IndexModel : PageModel
         [Phone]
         [Display(Name = "Phone number")]
         public string? PhoneNumber { get; set; }
+        public IFormFile? ProfilePicture { get; set; }
+        public string? CurrentProfilePicturePath { get; set; }
+        public bool RemoveProfilePicture { get; set; }
+
+
+        [Required]
+        [Display(Name = "First name")]
+        public string FirstName { get; set; } = string.Empty;
+
     }
 
     private async Task LoadAsync(ApplicationUser user)
@@ -71,7 +84,9 @@ public class IndexModel : PageModel
 
         Input = new InputModel
         {
-            PhoneNumber = phoneNumber
+            PhoneNumber = phoneNumber,
+            CurrentProfilePicturePath = user.ProfilePicturePath,
+            FirstName = user.FirstName
         };
     }
 
@@ -100,6 +115,95 @@ public class IndexModel : PageModel
             await LoadAsync(user);
             return Page();
         }
+
+        if (Input.RemoveProfilePicture && Input.ProfilePicture == null)
+        {
+            if (!string.IsNullOrEmpty(user.ProfilePicturePath))
+            {
+                var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, user.ProfilePicturePath.TrimStart('/'));
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
+
+            user.ProfilePicturePath = null;
+            await _userManager.UpdateAsync(user);
+        }
+
+        if (Input.ProfilePicture != null)
+        {
+            const long maxSize = 2 * 1024 * 1024; // 2MB
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+
+            if (Input.ProfilePicture.Length > maxSize)
+            {
+                ModelState.AddModelError("Input.ProfilePicture", "Picture can not be larger than 2MB.");
+                await LoadAsync(user);
+                return Page();
+            }
+
+            if (!allowedTypes.Contains(Input.ProfilePicture.ContentType))
+            {
+                ModelState.AddModelError("Input.ProfilePicture", "Only JPG, PNG or WEBP format.");
+                await LoadAsync(user);
+                return Page();
+            }
+
+            using var stream = Input.ProfilePicture.OpenReadStream();
+            var buffer = new byte[12];
+            await stream.ReadAsync(buffer.AsMemory(0, 12));
+            stream.Position = 0;
+
+            bool isValidImage =
+                (buffer[0] == 0xFF && buffer[1] == 0xD8) || // JPEG
+                (buffer[0] == 0x89 && buffer[1] == 0x50) || // PNG
+                (buffer[8] == 0x57 && buffer[9] == 0x45 && buffer[10] == 0x42 && buffer[11] == 0x50); // WEBP
+
+            if (!isValidImage)
+            {
+                ModelState.AddModelError("Input.ProfilePicture", "File is not a valid image.");
+                await LoadAsync(user);
+                return Page();
+            }
+
+            var fileExtension = Path.GetExtension(Input.ProfilePicture.FileName);
+            var fileName = $"{user.Id}_{Guid.NewGuid()}{fileExtension}";
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads", "profile-pictures");
+
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            //using jer file mora biti otvoren dok radimo copytoasync
+            using (var fileWriteStream = new FileStream(filePath, FileMode.Create))
+            {
+                await Input.ProfilePicture.CopyToAsync(fileWriteStream);
+            }
+
+            //ako korisnik ima staru sliku, ukloni ju
+            if (!string.IsNullOrEmpty(user.ProfilePicturePath))
+            {
+                var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, user.ProfilePicturePath.TrimStart('/'));
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
+
+            user.ProfilePicturePath = $"/uploads/profile-pictures/{fileName}";
+            await _userManager.UpdateAsync(user);
+        }
+
+        if (Input.FirstName != user.FirstName)
+        {
+            user.FirstName = Input.FirstName;
+            await _userManager.UpdateAsync(user);
+        }
+        
 
         var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
         if (Input.PhoneNumber != phoneNumber)

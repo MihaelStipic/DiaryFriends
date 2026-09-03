@@ -9,7 +9,27 @@
 <partial name="_StatusMessage" for="StatusMessage" />
 <div class="row">
     <div class="col-md-6">
-        <form id="profile-form" method="post">
+        <form id="profile-form" method="post" enctype="multipart/form-data">
+            <div class="form-group mb-4 text-center">
+                <div class="position-relative d-inline-block">
+                    
+                    <input asp-for="Input.ProfilePicture" id="myUpload" type="file" class="d-none" accept="image/*" onchange="showPicture(this)" />
+
+                    <label for="myUpload" class="btn btn-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto shadow-sm p-0 position-relative overflow-hidden" style="width: 120px; height: 120px; font-size: 4rem; cursor: pointer;">
+
+                        <span id="plusPicture" class="@(string.IsNullOrEmpty(Model.Input.CurrentProfilePicturePath) ? "" : "d-none")" style="margin-bottom: 10px;">+</span>
+
+                        <img id="picPreview" src="@Model.Input.CurrentProfilePicturePath" class="@(string.IsNullOrEmpty(Model.Input.CurrentProfilePicturePath) ? "d-none" : "") w-100 h-100 position-absolute" style="object-fit: cover; top: 0; left: 0;" />
+
+
+
+                    </label>
+
+                    <button type="button" id="removePicture" class="btn btn-danger btn-sm rounded-circle @(string.IsNullOrEmpty(Model.Input.CurrentProfilePicturePath) ? "d-none" : "") position-absolute" style="width: 32px; height: 32px; bottom: 0; right: 0;" onclick="clearPicture()">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <input type="hidden" asp-for="Input.RemoveProfilePicture" id="removePictureFlag" />             </div>
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             <div class="form-floating mb-3">
                 <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
@@ -20,10 +40,62 @@
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
             </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.FirstName" class="form-control" placeholder="Please enter your first name." />
+                <label asp-for="Input.FirstName" class="form-label"></label>
+                <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </form>
     </div>
 </div>
+
+
+<script>
+    function showPicture(input) {
+    const maxSize = 2 * 1024 * 1024; // 2MB
+    const dozvoljeniTipovi = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (input.files && input.files[0]) {
+        const file = input.files[0];
+
+        if (!dozvoljeniTipovi.includes(file.type)) {
+            alert('Only JPG, PNG or WEBP format.');
+            input.value = '';
+            return;
+        }
+
+        if (file.size > maxSize) {
+            alert('Picture can not be larger than 2MB');
+            input.value = '';
+            return;
+        }
+
+        let citac = new FileReader();
+        citac.onload = function (e) {
+            document.getElementById('plusPicture').classList.add('d-none');
+            let slika = document.getElementById('picPreview');
+            slika.src = e.target.result;
+            slika.classList.remove('d-none');
+            document.getElementById('removePicture').classList.remove('d-none');
+        }
+        citac.readAsDataURL(file);
+    }
+}
+
+
+        function clearPicture() {
+        document.getElementById('myUpload').value = '';
+        document.getElementById('picPreview').src = '';
+        document.getElementById('picPreview').classList.add('d-none');
+        document.getElementById('plusPicture').classList.remove('d-none');
+        document.getElementById('removePicture').classList.add('d-none');
+        document.getElementById('removePictureFlag').value = 'true';
+
+    }
+</script>
+
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
